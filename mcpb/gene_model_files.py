@@ -1239,6 +1239,107 @@ def write_only_n2h(mol, i, gatms, smpdbf):
                           crdx, crdy, crdz, occp, tempfac)
             writepdbatm(atmi, smpdbf)
 
+#---------------------Write normal residue into the PDB file---------------------
+def write_base(mol, i, gatms, pdbf, fpf=None):
+
+    print("It contains the residue " + str(i) + '-' + \
+          mol.residues[i].resname + " as a base.")
+
+    for j in mol.residues[i].resconter:
+        tiker = mol.atoms[j].gtype
+        atid = mol.atoms[j].atid
+
+        atname = mol.atoms[j].atname
+
+        if (atname not in ['P','OP1','OP2']):
+            element = mol.atoms[j].element
+            chainid = 'A'
+            resid = mol.atoms[j].resid
+            resname = mol.residues[resid].resname
+
+            crdx = mol.atoms[j].crd[0]
+            crdy = mol.atoms[j].crd[1]
+            crdz = mol.atoms[j].crd[2]
+            occp = 1.00
+            tempfac = 0.00
+
+            crdx = round(crdx, 3)
+            crdy = round(crdy, 3)
+            crdz = round(crdz, 3)
+
+            #Gaussian file
+            gatms.append(gauatm(element, crdx, crdy, crdz))
+
+            #PDB file
+            atmi = pdbatm(tiker, atid, atname, resname, chainid, resid,
+                          crdx, crdy, crdz, occp, tempfac)
+            writepdbatm(atmi, pdbf)
+
+            #Fingerprint file
+            if fpf is not None:
+                fpff = open(fpf, 'a')
+                print(str(resid) + '-' + resname + '-' + atname, file=fpff)
+                fpff.close()
+
+#-----------------------Write Sidechain residues-------------------------------
+def write_sc(mol, i, gatms, smpdbf):
+
+    global H_NAMES, SH_NAMES, GH_NAMES
+
+    print("It contains the residue " + str(i) + '-' + \
+          mol.residues[i].resname + " as sidechain coordinated.")
+
+    #get the coordinates of the Ca atom
+    for j in mol.residues[i].resconter:
+        atname = mol.atoms[j].atname
+        if atname == 'CA':
+            cacrd = mol.atoms[j].crd
+
+    #N, C, HA are three Hs in the small model
+    atnames = []
+    hdict = {}
+
+    for j in mol.residues[i].resconter:
+        atname = mol.atoms[j].atname
+        if (atname in ['N', 'C', 'HA']):
+            atnames.append(atname)
+
+    for j in range(0, len(atnames)):
+        hdict[atnames[j]] = SH_NAMES[j]
+
+    for j in mol.residues[i].resconter:
+        atname = mol.atoms[j].atname
+        if (atname not in ['H', 'HN', 'O', 'OXT', 'H1', 'H2', 'H3', 'HN1', 'HN2', 'HN3']): #HN is a alias of H
+            #These two backbone atoms will be deleted in the sidechain modeling
+            resname = mol.residues[i].resname
+            if (atname == 'CA'):
+                atname = 'CH3'
+                crdx = mol.atoms[j].crd[0]
+                crdy = mol.atoms[j].crd[1]
+                crdz = mol.atoms[j].crd[2]
+                element = 'C'
+            elif (atname in ['N', 'C', 'HA']):
+                atname = hdict[atname]
+                bvec = calc_bond(cacrd, mol.atoms[j].crd)
+                crdx = cacrd[0] + bdld['CH'] * (mol.atoms[j].crd[0] - cacrd[0])/bvec
+                crdy = cacrd[1] + bdld['CH'] * (mol.atoms[j].crd[1] - cacrd[1])/bvec
+                crdz = cacrd[2] + bdld['CH'] * (mol.atoms[j].crd[2] - cacrd[2])/bvec
+                element = 'H'
+            else: #Which is in the sidechain
+                crdx = mol.atoms[j].crd[0]
+                crdy = mol.atoms[j].crd[1]
+                crdz = mol.atoms[j].crd[2]
+                element = mol.atoms[j].element
+
+            crdx = round(crdx, 3)
+            crdy = round(crdy, 3)
+            crdz = round(crdz, 3)
+
+            #Gaussian file
+            gatms.append(gauatm(element, crdx, crdy, crdz))
+
+            tiker = mol.atoms[j].gtype
+
 #------------------------------Sidechain------------------------------------
 def build_small_model(mol, reslist, ionids, cutoff, smresids, smresace,
     smresnme, smresgly, smresant, smresact, smresknh, smreskco, smchg,
@@ -1307,7 +1408,10 @@ def build_small_model(mol, reslist, ionids, cutoff, smresids, smresace,
         #8) For normal amino acid residues, keep the small
         elif i in reslist.std:
             write_sc(mol, i, gatms, smpdbf)
-        #9) For speical residue
+        #9) For bases, remove phosphates
+        elif i in reslist.term5 or i in reslist.term3 or i in reslist.base:
+            write_base(mol, i, gatms, smpdbf)
+        #10) For speical residue
         else:
             write_normal(mol, reslist, i, gatms, smpdbf)
 
@@ -1725,7 +1829,7 @@ def gene_model_files(pdbfile, ionids, addres, addbpairs, outf, ffchoice, naamol2
     smreskco = [] #Residues to keep C and O, which is connect to the residue
                   #which has backbone nitrogen bond to the ion and also bond to
                   #to the ion but with sidechain
-
+    smresbase = []#Base with sugar
     bdedresids = []
     bdedresdict = {}
 
@@ -1828,8 +1932,13 @@ def gene_model_files(pdbfile, ionids, addres, addbpairs, outf, ffchoice, naamol2
                 else:
                     smresace.append(resid-1)
 
+        #4. If residue is a basepair
+        elif (resid in reslist.base) or (resid in reslist.term3) or (resid in reslist.term5):
+            smresbase.append(resid)
+
+
     smresids = smresids + smresace + smresnme + smresgly + smresknh + \
-               smreskco + smresant + smresact
+               smreskco + smresant + smresact + smresbase
     smresids = list(set(smresids))
     smresids.sort()
 
@@ -1850,6 +1959,8 @@ def gene_model_files(pdbfile, ionids, addres, addbpairs, outf, ffchoice, naamol2
         print('ANT-', i, file=w_smresf)
     for i in smresact:
         print('ACT-', i, file=w_smresf)
+    for i in smresbase:
+        print('BASED')
     w_smresf.close()
 
     print("***The small model contains the following residues: ")
