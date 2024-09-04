@@ -1,1 +1,1 @@
-__all__ = ('atomtypes','getlist','mol', 'readmol2', 'readpdb')
+__all__ = ('atomtypes','getlist','mol', 'mol2io', 'pdbio')

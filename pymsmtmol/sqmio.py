@@ -1,25 +1,25 @@
 "This module for SQM"
 
 import linecache
-from pymsmtmol.mol import gauatm
-from chemistry.periodic_table import AtomicNum
+from pymsmt.mol.mol import gauatm
+from parmed.periodic_table import AtomicNum
 
 #------------------------------------------------------------------------------
 #------------------------------Write SQM input file----------------------------
 #------------------------------------------------------------------------------
 
-def write_sqm_optf(siopf, scchg, gatms):
+def write_sqm_optf(siopf, smchg, gatms):
 
     sqm_scf = open(siopf, 'w')
-    print >> sqm_scf, "Run semi-empirical minimization"
-    print >> sqm_scf, " &qmmm"
-    print >> sqm_scf, " qm_theory='PM6', grms_tol=0.0002,"
-    print >> sqm_scf, " tight_p_conv=1, scfconv=1.d-10, qmcharge=%d," %scchg
-    print >> sqm_scf, " /"
+    print("Run semi-empirical minimization", file=sqm_scf)
+    print(" &qmmm", file=sqm_scf)
+    print(" qm_theory='PM6', grms_tol=0.0002,", file=sqm_scf)
+    print(" tight_p_conv=1, scfconv=1.d-10, qmcharge=%d," %smchg, file=sqm_scf)
+    print(" /", file=sqm_scf)
     for gatmi in gatms:
         nuchg = int(AtomicNum[gatmi.element])
-        print >> sqm_scf, "%-2s %5s %10.4f %10.4f %10.4f" \
-        %(nuchg, gatmi.element, gatmi.crdx, gatmi.crdy, gatmi.crdz)
+        print("%-2s %5s %10.4f %10.4f %10.4f" \
+        %(nuchg, gatmi.element, gatmi.crdx, gatmi.crdy, gatmi.crdz), file=sqm_scf)
     sqm_scf.close()
 
 #------------------------------------------------------------------------------
@@ -30,7 +30,7 @@ def get_crdinfo_from_sqm(outfile):
 
     gauatms = []
 
-    ln = 1  
+    ln = 1
     fp = open(outfile, 'r')
     for line in fp:
         if " Final Structure" in line:
@@ -50,5 +50,3 @@ def get_crdinfo_from_sqm(outfile):
 
     linecache.clearcache()
     return gauatms
-
-

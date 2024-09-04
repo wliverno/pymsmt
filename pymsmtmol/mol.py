@@ -1,8 +1,8 @@
-from __future__ import absolute_import
-from pymsmtmol.element import resnamel
+
+from pymsmt.mol.element import resnamel
 
 """
-This is the code for defining the molecule class 
+This is the code for defining the molecule class
   Molecule class that contains biomolecular data:
   * 0. atids : atom ID list, e.g. [1, 2, 3, ...], int
   * 1. atnames : sequential list of atoms in an array, e.g. [H1, C1, O1,...], char
@@ -18,132 +18,142 @@ This is the code for defining the molecule class
   """
 
 class Atom:
-  def __init__(self, gtype, atid, atname, element, atomtype, crd, charge, resid, resname):
-      self.gtype = gtype
-      self.atid = atid
-      self.atname = atname
-      self.element = element
-      self.atomtype = atomtype
-      self.crd = crd
-      self.charge = charge
-      self.resid = resid
-      self.resname = resname
+    def __init__(self, gtype, atid, atname, element, atomtype, crd, charge, resid, resname):
+        self.gtype = gtype
+        self.atid = atid
+        self.atname = atname
+        self.element = element
+        self.atomtype = atomtype
+        self.crd = crd
+        self.charge = charge
+        self.resid = resid
+        self.resname = resname
 
 class Residue:
-  def __init__(self, resid, resname, resconter):
-      self.resid = resid
-      self.resname = resname
-      self.resconter = resconter
+    def __init__(self, resid, resname, resconter):
+        self.resid = resid
+        self.resname = resname
+        self.resconter = resconter
 
 class Molecule:
 
-  def __init__(self, atoms, residues):
-      self.atoms = atoms
-      self.residues = residues
+    def __init__(self, atoms, residues):
+        self.atoms = atoms
+        self.residues = residues
 
-  def renum(self):
-      #atom id and resid dict
-      atomdict = {}
-      resdict = {}
+    def renum(self):
+        #atom id and resid dict
+        atomdict = {}
+        resdict = {}
 
-      #dict to store the data
-      Atoms = {}
-      Residues = {}
+        #dict to store the data
+        Atoms = {}
+        Residues = {}
 
-      natids = self.atoms.keys()
-      natids.sort()
-      nresids = self.residues.keys()
-      nresids.sort()
+        natids = list(self.atoms.keys())
+        natids.sort()
+        nresids = list(self.residues.keys())
+        nresids.sort()
 
-      #renumber the atoms
-      for i in range(1, len(self.atoms)+1):
-        Atoms[i] = self.atoms[natids[i-1]]
+        #renumber the atoms
+        for i in range(1, len(self.atoms)+1):
+            Atoms[i] = self.atoms[natids[i-1]]
 
-      #renumber the residues
-      for i in range(1, len(self.residues)+1):
-        Residues[i] = self.residues[nresids[i-1]]
+        #renumber the residues
+        for i in range(1, len(self.residues)+1):
+            Residues[i] = self.residues[nresids[i-1]]
 
-      #return the molecule
-      mol1 = Molecule(Atoms, Residues)
-      return mol1
+        #return the molecule
+        mol1 = Molecule(Atoms, Residues)
+        return mol1
 
-  def delwaterion(self):
-      #for each residue
-      for i in range(1, len(self.residues)+1):
-        if (self.residues[i].resname in ['WAT', 'HOH']) or \
-          (self.residues[i].resname[-1] in ['+', '-']):
-          #for each atom in the residue
-          for j in self.residues[i].resconter:
-            del self.atoms[j]
-          del self.residues[i]
-      #atids = self.atoms.keys().sort()
-      #resids = self.residues.keys().sort()
+    def delwaterion(self):
+        #for each residue
+        for i in range(1, len(self.residues)+1):
+            if (self.residues[i].resname in ['WAT', 'HOH']) or \
+              (self.residues[i].resname[-1] in ['+', '-']):
+                #for each atom in the residue
+                for j in self.residues[i].resconter:
+                    del self.atoms[j]
+                del self.residues[i]
+        #atids = self.atoms.keys().sort()
+        #resids = self.residues.keys().sort()
 
-  def delwater(self):
-      #for each residue
-      for i in range(1, len(self.residues)+1):
-        if self.residues[i].resname in ['WAT', 'HOH']:
-          #for each atom in the residue
-          for j in self.residues[i].resconter:
-            del self.atoms[j]
-          del self.residues[i]
-      #atids = self.atoms.keys().sort()
-      #resids = self.residues.keys().sort()
-      #return self
+    def delwater(self):
+        #for each residue
+        for i in range(1, len(self.residues)+1):
+            if self.residues[i].resname in ['WAT', 'HOH']:
+                #for each atom in the residue
+                for j in self.residues[i].resconter:
+                    del self.atoms[j]
+                del self.residues[i]
+        #atids = self.atoms.keys().sort()
+        #resids = self.residues.keys().sort()
+        #return self
 
-  def delion(self):
-      #for each residue
-      for i in range(1, len(self.residues)+1):
-        if self.residues[i].resname[-1] in ['+', '-']:
-          #for each atom in the residue
-          for j in self.residues[i].resconter:
-            del self.atoms[j]
-          del self.residues[i]
-      #atids = self.atoms.keys().sort()
-      #resids = self.residues.keys().sort()
-      #return self, atids, resids
+    def delion(self):
+        #for each residue
+        for i in range(1, len(self.residues)+1):
+            if self.residues[i].resname[-1] in ['+', '-']:
+                #for each atom in the residue
+                for j in self.residues[i].resconter:
+                    del self.atoms[j]
+                del self.residues[i]
+        #atids = self.atoms.keys().sort()
+        #resids = self.residues.keys().sort()
+        #return self, atids, resids
 
-  def keepaas(self):
-      for i in range(1, len(self.residues)+1):
-        if (self.residues[i].resname not in resnamel):
-          #for each atom in the residue
-          for j in self.residues[i].resconter:
-            del self.atoms[j]
-          del self.residues[i]
+    def keepaas(self):
+        for i in range(1, len(self.residues)+1):
+            if (self.residues[i].resname not in resnamel):
+                #for each atom in the residue
+                for j in self.residues[i].resconter:
+                    del self.atoms[j]
+                del self.residues[i]
 
 class Linklist:
-  def __init__(self, bondlist, anglist, dihlist, implist, nblist):
-      self.bondlist = bondlist
-      self.anglist = anglist
-      self.dihlist = dihlist
-      self.implist = implist
-      self.nblist = nblist
+    def __init__(self, bondlist, anglist, dihlist, implist, nblist):
+        self.bondlist = bondlist
+        self.anglist = anglist
+        self.dihlist = dihlist
+        self.implist = implist
+        self.nblist = nblist
 
 class pdbatm:
-  def __init__(self, tiker, atid, atname, resname, chainid, resid, crdx, crdy, crdz, occp, tempfac):
-      self.tiker = tiker
-      self.atid = atid
-      self.atname = atname
-      self.resname = resname
-      self.chainid = chainid
-      self.resid = resid
-      self.crdx = crdx
-      self.crdy = crdy
-      self.crdz = crdz
-      self.occp = occp
-      self.tempfac = tempfac
+    def __init__(self, tiker, atid, atname, resname, chainid, resid, crdx, crdy, crdz, occp, tempfac):
+        self.tiker = tiker
+        self.atid = atid
+        self.atname = atname
+        self.resname = resname
+        self.chainid = chainid
+        self.resid = resid
+        self.crdx = crdx
+        self.crdy = crdy
+        self.crdz = crdz
+        self.occp = occp
+        self.tempfac = tempfac
 
 class gauatm:
-  def __init__(self, element, crdx, crdy, crdz):
-      self.element = element
-      self.crdx = crdx
-      self.crdy = crdy
-      self.crdz = crdz
+    def __init__(self, element, crdx, crdy, crdz):
+        self.element = element
+        self.crdx = crdx
+        self.crdy = crdy
+        self.crdz = crdz
+
+class XYZatom:
+    """Class for the xyz file containing atoms ::: XYZatom(element, coordinates)"""
+
+    def __init__(self, element, crd):
+        self.element = element
+        self.crd = crd
 
 class residuelist:
-    def __init__(self, cterm, nterm, std, nonstd, water):
+    def __init__(self, cterm, nterm, std, nonstd, water, term3, term5, base):
         self.cterm = cterm
         self.nterm = nterm
+        self.term3 = term3
+        self.term5 = term5
+        self.base = base
         self.std = std
         self.nonstd = nonstd
         self.water = water
@@ -151,35 +161,50 @@ class residuelist:
 def get_reslist(mol, resids):
     cterm = []
     nterm = []
+    term5 = []
+    term3 = []
+    base = []
     std = []
     nonstd = []
     water = []
 
     for i in resids:
-      resnamei = mol.residues[i].resname
-      atnames = []
+        resnamei = mol.residues[i].resname
+        atnames = []
 
-      for j in mol.residues[i].resconter:
-        atnamej = mol.atoms[j].atname
-        atnames.append(atnamej)
+        for j in mol.residues[i].resconter:
+            atnamej = mol.atoms[j].atname
+            atnames.append(atnamej)
 
-      if (set(['CA', 'N', 'C', 'O', 'OXT', 'H2', 'H3']) < set(atnames)) or \
-         (set(['CA', 'N', 'C', 'O', 'OXT', 'HN2', 'HN3']) < set(atnames)):
-        nonstd.append(i)
-      elif (set(['CA', 'N', 'C', 'O', 'H2', 'H3']) < set(atnames)) or \
-           (set(['CA', 'N', 'C', 'O', 'HN2', 'HN3']) < set(atnames)):
-        nterm.append(i)
-      elif set(['CA', 'N', 'C', 'O', 'OXT']) < set(atnames):
-        cterm.append(i)
-      elif set(['CA', 'N', 'C', 'O']) < set(atnames):
-        std.append(i)
-      else:
-        nonstd.append(i)
+        if (set(['CA', 'N', 'C', 'O', 'OXT', 'H2', 'H3']) < set(atnames)) or \
+           (set(['CA', 'N', 'C', 'O', 'OXT', 'HN2', 'HN3']) < set(atnames)):
+        # If there is a isolated residue
+            nonstd.append(i)
+        elif (set(['CA', 'N', 'C', 'O', 'H2', 'H3']) < set(atnames)) or \
+             (set(['CA', 'N', 'C', 'O', 'HN2', 'HN3']) < set(atnames)):
+        # If it is a N-terminal residue
+            nterm.append(i)
+        elif set(['CA', 'N', 'C', 'O', 'OXT']) < set(atnames):
+        # If it is a C-terminal residue
+            cterm.append(i)
+        elif set(['CA', 'N', 'C', 'O']) < set(atnames):
+            if i == min(resids):
+                nterm.append(i)
+            elif i == max(resids):
+                cterm.append(i)
+            else:
+                std.append(i)
+        elif 'HO3\'' in atnames:
+            term3.append(i)
+        elif 'HO5\'' in atnames:
+            term5.append(i)
+        elif set(['P','OP1', 'OP2']) < set(atnames):
+            base.append(i)
+        else:
+            nonstd.append(i)
 
-      if resnamei in ['WAT', 'HOH']:
-        water.append(i)
+        if resnamei in ['WAT', 'HOH']:
+            water.append(i)
 
-    reslist = residuelist(cterm, nterm, std, nonstd, water)
+    reslist = residuelist(cterm, nterm, std, nonstd, water, term3, term5, base)
     return reslist
-
-
