@@ -254,6 +254,12 @@ def gene_leaprc(gname, orpdbf, fipdbf, stpdbf, stfpf, ionids,\
     if model in [1, 2]:
         for i in resns:
             print('%s = loadmol2 %s.mol2' %(i, i), file=lp)
+            #If DNA base, add backbone connection
+            if i[:2] in ['DC', 'DT', 'DC', 'DG', 'DM']:
+                print('set %s.1 connect1 %s.1.O3\'' %(i, i), file=lp)
+                print('set %s.1 connect0 %s.1.P' %(i, i), file=lp)
+                print('set %s tail %s.1.O3\'' %(i, i), file=lp)
+                print('set %s head %s.1.P' %(i, i), file=lp)
     elif model == 3:
         for i in naamol2fs:
             print('%s = loadmol2 %s.mol2' %(i, i), file=lp)

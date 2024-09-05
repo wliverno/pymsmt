@@ -1239,11 +1239,12 @@ def write_only_n2h(mol, i, gatms, smpdbf):
                           crdx, crdy, crdz, occp, tempfac)
             writepdbatm(atmi, smpdbf)
 
-#---------------------Write normal residue into the PDB file---------------------
-def write_base(mol, i, gatms, pdbf, fpf=None):
+#---------------------Write base+sugar into the PDB file---------------------
+# NOTE: NOT USED
+def write_basesugar(mol, i, gatms, pdbf, fpf=None):
 
     print("It contains the residue " + str(i) + '-' + \
-          mol.residues[i].resname + " as a base.")
+          mol.residues[i].resname + " as a sugar and base.")
 
     for j in mol.residues[i].resconter:
         tiker = mol.atoms[j].gtype
@@ -1255,7 +1256,7 @@ def write_base(mol, i, gatms, pdbf, fpf=None):
             element = mol.atoms[j].element
             chainid = 'A'
             resid = mol.atoms[j].resid
-            resname = mol.residues[resid].resname
+            resname = mol.residues[resid].resname[:2]+'N'
 
             crdx = mol.atoms[j].crd[0]
             crdy = mol.atoms[j].crd[1]
@@ -1280,6 +1281,74 @@ def write_base(mol, i, gatms, pdbf, fpf=None):
                 fpff = open(fpf, 'a')
                 print(str(resid) + '-' + resname + '-' + atname, file=fpff)
                 fpff.close()
+        #TODO: add missing hydrogens? (Automatically done in tleap/gview)
+
+#---------------------Write base into the PDB file---------------------
+def write_base(mol, i, gatms, pdbf, fpf=None):
+
+    print("It contains the residue " + str(i) + '-' + \
+          mol.residues[i].resname + " as a base.")
+    
+    #Information to add hydrogen 
+    C1coord = []
+    N1coord = []
+    Hinfo = []
+
+    for j in mol.residues[i].resconter:
+        tiker = mol.atoms[j].gtype
+        atid = mol.atoms[j].atid
+
+        element = mol.atoms[j].element
+        chainid = 'A'
+        resid = mol.atoms[j].resid
+        resname = mol.residues[resid].resname[:2]+'N'
+
+        crdx = mol.atoms[j].crd[0]
+        crdy = mol.atoms[j].crd[1]
+        crdz = mol.atoms[j].crd[2]
+        occp = 1.00
+        tempfac = 0.00
+
+        atname = mol.atoms[j].atname
+        
+        if atname=='C1\'':
+            C1coord = mol.atoms[j].crd
+            Hinfo = [tiker, atid, resname, chainid, resid, occp, tempfac]
+        elif atname=='N1':
+            N1coord = mol.atoms[j].crd
+        
+        if '\'' not in atname and atname not in ['OP1', 'OP2', 'P']:
+            crdx = round(crdx, 3)
+            crdy = round(crdy, 3)
+            crdz = round(crdz, 3)
+
+            #Gaussian file
+            gatms.append(gauatm(element, crdx, crdy, crdz))
+
+            #PDB file
+            atmi = pdbatm(tiker, atid, atname, resname, chainid, resid,
+                          crdx, crdy, crdz, occp, tempfac)
+            writepdbatm(atmi, pdbf)
+
+            #Fingerprint file
+            if fpf is not None:
+                fpff = open(fpf, 'a')
+                print(str(resid) + '-' + resname + '-' + atname, file=fpff)
+                fpff.close()
+        
+    # Add Hydrogen to N1 location
+    Hvec = [C1coord[i]-N1coord[i] for i in range(3)] # N1-C1 vector 
+    Hvec = [v/sum([val**2 for val in Hvec])**0.5 for v in Hvec] # Unit vector 
+    Hcoord = [N1coord[i] + Hvec[i]*1.01 for i in range(3)] #Add H with typical Bond length for N-H
+    gatms.append(gauatm('H', Hcoord[0], Hcoord[1], Hcoord[2]))
+    writepdbatm(pdbatm(Hinfo[0], Hinfo[1], 'H1',  Hinfo[2], Hinfo[3], Hinfo[4], 
+        Hcoord[0], Hcoord[1], Hcoord[2], Hinfo[5], Hinfo[6]), pdbf)
+    if fpf is not None:
+        fpff = open(fpf, 'a')
+        print(str(Hinfo[4]) + '-' + Hinfo[2] + '-H1', file=fpff)
+        fpff.close()
+        
+
 
 #-----------------------Write Sidechain residues-------------------------------
 def write_sc(mol, i, gatms, smpdbf):
