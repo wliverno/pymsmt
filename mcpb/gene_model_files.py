@@ -22,7 +22,6 @@ H_NAMES = ['HH31', 'HH32', 'HH33']  #hydrogen names for ACE and NME methyl group
 SH_NAMES = ['H1', 'H2', 'H3'] #The names of the three Hs in the methyl group
 GH_NAMES = ['HA2', 'HA3'] #GLY hydrogen names
 SH_NAMES2 = ['H1', 'H2']
-BIND_ATOMS = ['N', 'O', 'S', 'F', 'Cl', 'Br', 'I']#, 'C']
 
 def del_files(fnamel):
     for fname in fnamel:
@@ -38,9 +37,13 @@ def count_lines(fname):
     fp.close()
 
 #-------------------Get metal center residue names-----------------------------
-def get_ms_resnames(pdbfile, ionids, cutoff, addres, addbpairs):
-
-    global BIND_ATOMS
+def get_ms_resnames(pdbfile, ionids, cutoff, addres, addbpairs, incC):
+    
+    #Build possible atom binding list
+    if incC:
+        bind_atoms = ['N', 'O', 'S', 'F', 'Cl', 'Br', 'I', 'C']
+    else:
+        bind_atoms = ['N', 'O', 'S', 'F', 'Cl', 'Br', 'I']
 
     mol, atids, resids = get_atominfo_fpdb(pdbfile)
     ionids = ionids #metal ion atom id
@@ -53,13 +56,12 @@ def get_ms_resnames(pdbfile, ionids, cutoff, addres, addbpairs):
 
     msresids = [] #metal site residues
     msresids = msresids + metresids + addres
-
     #Get the atoms which is in the cutoff of metal ion
     for met in ionids:
         for i in atids:
             if (i != met):
                 dis = calc_bond(mol.atoms[met].crd, mol.atoms[i].crd)
-                if (dis <= cutoff) and mol.atoms[i].element in BIND_ATOMS:
+                if (dis <= cutoff) and mol.atoms[i].element in bind_atoms:
                     if (mol.atoms[i].resid not in msresids):
                         msresids.append(mol.atoms[i].resid)
 
@@ -95,9 +97,13 @@ def get_ms_resnames(pdbfile, ionids, cutoff, addres, addbpairs):
     return mcresnames0, mcresnames
 
 #--------------------Get metal site bonded atom ids--------------------------
-def get_ms_ids(mol, atids, ionids, cutoff, addbpairs):
-
-    global BIND_ATOMS
+def get_ms_ids(mol, atids, ionids, cutoff, addbpairs, incC):
+    
+    #Build possible atom binding list
+    if incC:
+        bind_atoms = ['N', 'O', 'S', 'F', 'Cl', 'Br', 'I', 'C']
+    else:
+        bind_atoms = ['N', 'O', 'S', 'F', 'Cl', 'Br', 'I']
 
     bdatmids = []
     bdatnams = []
@@ -107,7 +113,7 @@ def get_ms_ids(mol, atids, ionids, cutoff, addbpairs):
         for i in atids:
             if (i != met):
                 dis = calc_bond(mol.atoms[met].crd, mol.atoms[i].crd)
-                if (dis <= cutoff) and mol.atoms[i].element in BIND_ATOMS:
+                if (dis <= cutoff) and mol.atoms[i].element in bind_atoms:
                     if i not in bdatmids:
                         bdatmids.append(i)
                         bdatnams.append(mol.atoms[i].atname)
@@ -1412,7 +1418,7 @@ def write_sc(mol, i, gatms, smpdbf):
 #------------------------------Sidechain------------------------------------
 def build_small_model(mol, reslist, ionids, cutoff, smresids, smresace,
     smresnme, smresgly, smresant, smresact, smresknh, smreskco, smchg,
-    smspin, addred, outf, sqmopt):
+    smspin, addred, outf, sqmopt, incC):
 
     """
     For building the small model
@@ -1443,6 +1449,12 @@ def build_small_model(mol, reslist, ionids, cutoff, smresids, smresace,
 
     #Delete the possible existing file
     del_files([smpdbf, gfcf, goptf])
+
+    #Build possible atom binding list
+    if incC:
+        bind_atoms = ['N', 'O', 'S', 'F', 'Cl', 'Br', 'I', 'C']
+    else:
+        bind_atoms = ['N', 'O', 'S', 'F', 'Cl', 'Br', 'I']
 
     #-------------------------------------------------------------------------
     ###############################Sidechain model############################
@@ -1506,7 +1518,7 @@ def build_small_model(mol, reslist, ionids, cutoff, smresids, smresace,
             for i in sm_atids:
                 if (i != met):
                     dis = calc_bond(mol.atoms[met].crd, mol.atoms[i].crd)
-                    if (dis <= cutoff) and mol.atoms[i].element in BIND_ATOMS:
+                    if (dis <= cutoff) and mol.atoms[i].element in bind_atoms:
                         if i not in bdatmids:
                             bdatmids.append(i)
                             if i > met:
@@ -1808,7 +1820,7 @@ def build_large_model(mol, reslist, lmsresids, lmsresace, lmsresnme,
                   "with spin number not equal to 1.")
 
 def gene_model_files(pdbfile, ionids, addres, addbpairs, outf, ffchoice, naamol2f, cutoff, \
-        watermodel, autoattyp, largeopt, sqmopt, smchg, smspin, addred, lgchg, lgspin):
+        watermodel, autoattyp, largeopt, sqmopt, smchg, smspin, addred, lgchg, lgspin, incC):
 
     mol, atids, resids = get_atominfo_fpdb(pdbfile)
 
@@ -1844,7 +1856,7 @@ def gene_model_files(pdbfile, ionids, addres, addbpairs, outf, ffchoice, naamol2
 
     #2. Metal site residues information
     msresids = [] #metal site residues
-    bdedatms, bdedatnams = get_ms_ids(mol, atids, ionids, cutoff, addbpairs)
+    bdedatms, bdedatnams = get_ms_ids(mol, atids, ionids, cutoff, addbpairs, incC)
 
     #3. Get the metal site containing residues
     for i in bdedatms:
@@ -2092,7 +2104,7 @@ def gene_model_files(pdbfile, ionids, addres, addbpairs, outf, ffchoice, naamol2
 
     build_small_model(mol, reslist, ionids, cutoff, smresids, smresace, smresnme,
                     smresgly, smresant, smresact, smresknh, smreskco, smchg,
-                    smspin, addred, outf, sqmopt)
+                    smspin, addred, outf, sqmopt, incC)
 
     build_standard_model(mol, reslist, cutoff, msresids, outf, ionids,
                          bdedatms, addbpairs, libdict, autoattyp)
