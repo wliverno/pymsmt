@@ -86,11 +86,16 @@ def get_ms_resnames(pdbfile, ionids, cutoff, addres, addbpairs, incC):
         for j in tmpl:
             if j == nresname:
                 counter = counter + 1
-
-        tmpl.append(nresname)
         nresname = nresname + str(counter)
+        
+        # Fix duplicate residue names (like DX3 or DX5 from BSC1)
+        while nresname in [r.resname for r in mol.residues.values()]:
+            tmpl.append(nresname[:-1])
+            counter=counter+1
+            nresname = nresname[:-1] + str(counter)
+        
+        tmpl.append(nresname[:-1])
         mcresnames.append(nresname)
-
     #Residue names of metal site ligating groups
     mcresnames0 = [mol.residues[i].resname for i in \
                    list(set(msresids)-set(metresids))]

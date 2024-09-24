@@ -604,8 +604,6 @@ print('The variable include_carbon is : ', incC)
 #Get the renamed residue name
 mcresname0, mcresname = get_ms_resnames(orpdbf, ionids, cutoff, addres,
                                         addbpairs, incC)
-print(mcresname)
-print(resnamel)
 for i in mcresname0:
     if (i not in resnamel) and (i+'.mol2' not in naamol2fs):
         raise pymsmtError('%s is required in naa_mol2files but not '
