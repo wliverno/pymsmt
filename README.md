@@ -15,7 +15,9 @@ Then, the patch can be applied simply by running
 
 	./patch.sh
 
-which creates back-ups of all replaced files 
+which creates back-ups of all replaced files. To restore these files simply run
+
+	./patch.sh --restore
 
 If you have installed AmberTools without a conda environment, make sure the following requirements are met before installing the patch: 
 - `$AMBERTOOLS` environmental variable set
