@@ -9,7 +9,7 @@ from pymsmt.mol.cal import calc_bond
 from pymsmt.mol.mol import pdbatm, gauatm, get_reslist
 from pymsmt.mol.getlist import get_blist
 from pymsmt.mol.element import (Atnum, CoRadiiDict,
-                              get_ionljparadict, AtnumRev, bdld)
+                              get_ionljparadict, AtnumRev, bdld, resnamel)
 from pymsmt.mol.gauio import (write_gauatm, write_gauatm_opth, write_gau_optf,
                              write_gau_fcf, write_gau_mkf)
 from pymsmt.mol.gmsio import (write_gmsatm, write_gms_optf, write_gms_fcf,
@@ -89,7 +89,7 @@ def get_ms_resnames(pdbfile, ionids, cutoff, addres, addbpairs, incC):
         nresname = nresname + str(counter)
         
         # Fix duplicate residue names (like DX3 or DX5 from BSC1)
-        while nresname in [r.resname for r in mol.residues.values()]:
+        while nresname in resnamel:
             tmpl.append(nresname[:-1])
             counter=counter+1
             nresname = nresname[:-1] + str(counter)
