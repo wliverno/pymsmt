@@ -91,10 +91,10 @@ def write_gau_optf(outf, goptf, smchg, SpinNum, gatms, naddred_list, signum=3):
     print("%NProcShared=2", file=optf)
 
     if naddred_list != []:
-        print("# B3LYP/6-31G* Geom=PrintInputOrient " + \
+        print("# B3LYP/GENECP Geom=PrintInputOrient symmetry=none 6D 10F " + \
                   "Integral=(Grid=UltraFine) Opt=AddRedundant", file=optf)
     else:
-        print("# B3LYP/6-31G* Geom=PrintInputOrient " + \
+        print("# B3LYP/GENECP Geom=PrintInputOrient symmetry=none 6D 10F " + \
                    "Integral=(Grid=UltraFine) Opt", file=optf)
 
     print(" ", file=optf)
@@ -120,6 +120,31 @@ def write_gau_optf(outf, goptf, smchg, SpinNum, gatms, naddred_list, signum=3):
             elif len(add_red) == 3:
                 print("%d %d %d" %(add_red[0], add_red[1], add_red[2]), file=optf)
     print(" ", file=optf)
+    
+    # Separate 'heavyAt' (heavier elements) from 'non-metals' (lighter elements)
+    lightElements = {'H', 'C', 'O', 'N', 'S', 'P','F'}
+    lightAt = ''
+    heavyAt = ''
+    atomtypes = set([atm.element.strip() for atm in gatms])
+    for atom in atomtypes.intersection(lightElements):
+        lightAt += atom + ' '
+    for atom in atomtypes.difference(lightElements):
+        heavyAt += atom + ' '
+    
+    # Use 6-31g(d,p) for lighter elements and LANL2DZ for heavier elements
+    if lightAt != '':
+        print(lightAt+'0', file=optf)
+        print('6-31g(d,p)', file=optf)
+        print('****', file=optf)
+    if heavyAt != '':
+        print(heavyAt+'0', file=optf)
+        print('LANL2DZ', file=optf)
+        print('****', file=optf)
+    print(" ", file=optf)
+    if heavyAt != '':
+        print(heavyAt + '0', file=optf)
+        print("LANL2", file=optf)
+        print(" ", file=optf)
     print(" ", file=optf)
     optf.close()
 
@@ -207,7 +232,7 @@ def write_gau_fcf(outf, gfcf, naddred_list):
     print("%%Chk=%s_small_opt.chk" %outf, file=fcf)
     print("%Mem=3000MB", file=fcf)
     print("%NProcShared=2", file=fcf)
-    print("# B3LYP/6-31G* Freq Geom=AllCheckpoint Guess=Read", file=fcf)
+    print("# B3LYP/ChkBasis Freq Geom=AllCheckpoint Guess=Read symmetry=none", file=fcf)
 
     if naddred_list != []:
         print("Integral=(Grid=UltraFine) Opt=AddRedundant " + \
@@ -249,11 +274,11 @@ def write_gau_mkf(outf, gmkf, lgchg, SpinNum, gatms, ionnames, chargedict,
     print("%NProcShared=2", file=mkf)
 
     if largeopt == 0:
-        print("# B3LYP/6-31G* Integral=(Grid=UltraFine) " + \
-                      "Pop(MK,ReadRadii)", file=mkf)
+        print("# B3LYP/GENECP symmetry=none Integral=(Grid=UltraFine) " + \
+                      "Pop(MK,ReadRadii) 6D 10F", file=mkf)
     elif largeopt in [1, 2]:
-        print("# B3LYP/6-31G* Integral=(Grid=UltraFine) Opt " + \
-                      "Pop(MK,ReadRadii)", file=mkf)
+        print("# B3LYP/GENECP symmetry=none Integral=(Grid=UltraFine) Opt " + \
+                      "Pop(MK,ReadRadii) 6D 10F", file=mkf)
 
     print("IOp(6/33=2,6/42=6)", file=mkf)
     print(" ", file=mkf)
@@ -346,10 +371,33 @@ def write_gau_mkf(outf, gmkf, lgchg, SpinNum, gatms, ionnames, chargedict,
                                   "for element %s with %d charge" %(ionname, chg))
             print(ionname, vdwradius, file=mkf)
         print(" ", file=mkf)
-        print(" ", file=mkf)
 
-    if largeopt == 0:
+ 
+    # Separate heavier elements from lighter elements
+    lightElements = {'H','He', 'Li','Be', 'B', 'C', 'O', 'N', 'F', 'Ne','S','P'}
+    lightAt = ''
+    heavyAt = ''
+    atomtypes = set([atm.element.strip() for atm in gatms])
+    for atom in atomtypes.intersection(lightElements):
+        lightAt += atom + ' '
+    for atom in atomtypes.difference(lightElements):
+        heavyAt += atom + ' '
+    
+    # Use 6-31g(d,p) for lighter elements and LANL2DZ for heavier elements
+    if lightAt != '':
+        print(lightAt+'0', file=mkf)
+        print('6-31g(d,p)', file=mkf)
+        print('****', file=mkf)
+    if heavyAt != '':
+        print(heavyAt+'0', file=mkf)
+        print('LANL2DZ', file=mkf)
+        print('****', file=mkf)
+    print(" ", file=mkf)
+    if heavyAt != '':
+        print(heavyAt + '0', file=mkf)
+        print("LANL2", file=mkf)
         print(" ", file=mkf)
+    print(" ", file=mkf)
 
     mkf.close()
 

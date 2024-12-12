@@ -1441,8 +1441,8 @@ def build_small_model(mol, reslist, ionids, cutoff, smresids, smresace,
     smpdbf = outf + '_small.pdb'
 
     #Gaussian
-    goptf = outf + '_small_opt.com'
-    gfcf = outf + '_small_fc.com'
+    goptf = outf + '_small_opt.gjf'
+    gfcf = outf + '_small_fc.gjf'
 
     #GAMESS
     goptf2 = outf + '_small_opt.inp'
@@ -1750,7 +1750,7 @@ def build_large_model(mol, reslist, lmsresids, lmsresace, lmsresnme,
     #Large model file
     lgpdbf = outf + '_large.pdb'
     lfpf = outf + '_large.fingerprint'
-    gmkf = outf + '_large_mk.com'
+    gmkf = outf + '_large_mk.gjf'
     gmsf = outf + '_large_mk.inp'
     simkf = outf + '_large_sqm.in'
     somkf = outf + '_large_sqm.out'
