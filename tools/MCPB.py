@@ -1,4 +1,3 @@
-#!/home/guillaume/anaconda3/envs/AmberTools/bin/python
 # Filename: MCPB.py
 """
 This is the MCPB.py program written by Pengfei Li in Merz Research Group

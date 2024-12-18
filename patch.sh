@@ -48,7 +48,9 @@ else
     cp -b -S .backup ./pymsmtmol/pdbio.py "$PYDIR/pymsmt/mol/"
     cp -b -S .backup ./pymsmtmol/gauio.py "$PYDIR/pymsmt/mol/"
     cp -b -S .backup ./lib.py "$PYDIR/pymsmt/"
-    cp -b -S .backup ./tools/MCPB.py "$AMBERHOME/bin/"
+    cp "$AMBERHOME/bin/MCPB.py" "$AMBERHOME/bin/MCPB.py.backup"
+    echo '#!'$(which python) > $AMBERHOME/bin/MCPB.py
+    cat ./tools/MCPB.py >> $AMBERHOME/bin/MCPB.py
     echo "Patch applied to AmberTools environment"
 fi
 
