@@ -42,7 +42,7 @@ else
     cp ./mmDNA/parmBSC1_mmDNA.lib "$AMBERHOME/dat/leap/lib/"
 
     echo "Patching python files..."
-    cp -b -S .backup ./mcpb/gene* "$PYDIR/pymsmt/mcpb/"
+    cp -b -S .backup ./mcpb/*.py "$PYDIR/pymsmt/mcpb/"
     cp -b -S .backup ./pymsmtmol/mol.py "$PYDIR/pymsmt/mol/"
     cp -b -S .backup ./pymsmtmol/element.py "$PYDIR/pymsmt/mol/"
     cp -b -S .backup ./pymsmtmol/pdbio.py "$PYDIR/pymsmt/mol/"
