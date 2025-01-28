@@ -1250,49 +1250,124 @@ def write_only_n2h(mol, i, gatms, smpdbf):
                           crdx, crdy, crdz, occp, tempfac)
             writepdbatm(atmi, smpdbf)
 
-#---------------------Write base+sugar into the PDB file---------------------
-# NOTE: NOT USED
-def write_basesugar(mol, i, gatms, pdbf, fpf=None):
+# Utility function for adding terminal OH to group
+def genOH(at1, vec): 
+    # Normalize average vector
+    mag = sum(x*x for x in vec)**0.5
+    norm = [x/mag for x in vec]
+    
+    # Get terminal O
+    terminal_o = [at1[i] + vec[i] for i in range(3)]
+    
+    # Get perpendicular vector for H placement (cross product with z or x axis)
+    perp = [norm[1], -norm[0], 0] if max(abs(norm[0]), 
+            abs(norm[1])) < 0.9 else [0, norm[2], -norm[1]]
+    perp_mag = sum(x*x for x in perp)**0.5
+    perp = [x/perp_mag for x in perp]
+    
+    # Place H with 110 degree XOH angle, OH bond length 0.96
+    terminal_h = [terminal_o[i] + 0.96 * (0.342*norm[i]- 0.940*perp[i])
+                      for i in range(3)]
+    return terminal_o, terminal_h
+
+#---------------------Write nucleotide into the PDB file---------------------
+def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
 
     print("It contains the residue " + str(i) + '-' + \
           mol.residues[i].resname + " as a sugar and base.")
-
+    OPCoords = []
+    PCoord = []
+    O3Coord = []
+    C3Coord = []
+    Oinfo = []
+    Hinfo = []
     for j in mol.residues[i].resconter:
         tiker = mol.atoms[j].gtype
         atid = mol.atoms[j].atid
-
         atname = mol.atoms[j].atname
+        element = mol.atoms[j].element
+        chainid = 'A'
+        resid = mol.atoms[j].resid
+        resname = mol.residues[resid].resname[:2]+'N'
 
-        if (atname not in ['P','OP1','OP2']):
-            element = mol.atoms[j].element
-            chainid = 'A'
-            resid = mol.atoms[j].resid
-            resname = mol.residues[resid].resname[:2]+'N'
 
-            crdx = mol.atoms[j].crd[0]
-            crdy = mol.atoms[j].crd[1]
-            crdz = mol.atoms[j].crd[2]
-            occp = 1.00
-            tempfac = 0.00
+        if atname in ['OP1','OP2', 'O5\'']:
+            OPCoords.append(mol.atoms[j].crd)
+        elif atname == 'P':
+            PCoord = mol.atoms[j].crd
+        elif atname == 'O3\'':
+            O3Coord = mol.atoms[j].crd
+            Oinfo = [tiker, atid, resname, chainid, resid, occp, tempfac]
+        elif atname == 'C3\'':
+            C3Coord = mol.atoms[j].crd
+            Hinfo = [tiker, atid, resname, chainid, resid, occp, tempfac]
 
-            crdx = round(crdx, 3)
-            crdy = round(crdy, 3)
-            crdz = round(crdz, 3)
+        element = mol.atoms[j].element
+        chainid = 'A'
+        resid = mol.atoms[j].resid
+        resname = mol.residues[resid].resname[:2]+'N'
 
-            #Gaussian file
-            gatms.append(gauatm(element, crdx, crdy, crdz))
+        crdx = mol.atoms[j].crd[0]
+        crdy = mol.atoms[j].crd[1]
+        crdz = mol.atoms[j].crd[2]
+        occp = 1.00
+        tempfac = 0.00
 
-            #PDB file
-            atmi = pdbatm(tiker, atid, atname, resname, chainid, resid,
-                          crdx, crdy, crdz, occp, tempfac)
-            writepdbatm(atmi, pdbf)
+        crdx = round(crdx, 3)
+        crdy = round(crdy, 3)
+        crdz = round(crdz, 3)
 
-            #Fingerprint file
-            if fpf is not None:
-                fpff = open(fpf, 'a')
-                print(str(resid) + '-' + resname + '-' + atname, file=fpff)
-                fpff.close()
-        #TODO: add missing hydrogens? (Automatically done in tleap/gview)
+        #Gaussian file
+        gatms.append(gauatm(element, crdx, crdy, crdz))
+
+        #PDB file
+        atmi = pdbatm(tiker, atid, atname, resname, chainid, resid,
+                      crdx, crdy, crdz, occp, tempfac)
+        writepdbatm(atmi, pdbf)
+
+        #Fingerprint file
+        if fpf is not None:
+            fpff = open(fpf, 'a')
+            print(str(resid) + '-' + resname + '-' + atname, file=fpff)
+    
+    # If it doesn't already have 3' termination
+    if not term3:
+        # Use C3-O3 bond to generate H3 coordinates
+        vec = [O3Coord[i]-C3Coord[i] for i in range(3)]
+        _, H3coord = genOH(C3Coord, vec)
+
+        # Add Coordinates
+        gatms.append(gauatm('H', H3coord[0], H3coord[1], H3coord[2]))
+        writepdbatm(pdbatm(Hinfo[0], Hinfo[1], 'HO3\'',  Hinfo[2], Hinfo[3], Hinfo[4], 
+            H3coord[0], H3coord[1], H3coord[2], Hinfo[5], Hinfo[6]), pdbf)
+
+    # If it doesn't already have 5' termination (Phosphate will not exist!)
+    if not term5:
+        # use average of O-P bonds to generate -OH direction
+        v = [[b[i]-PCoord[i] for i in range(3)] for b in OPCoords]
+        avg = [-sum(v[j][i] for j in range(3)) for i in range(3)]
+        mag = sum(x*x for x in avg)**0.5
+        # P-O bond length of 1.6
+        vec = [x*1.6/mag for x in avg]
+        POcoord, POHcoord = genOH(PCoord, vec)
+
+        # Add Coordinates
+        gatms.append(gauatm('O', POcoord[0], POcoord[1], POcoord[2]))
+        writepdbatm(pdbatm(Oinfo[0], Oinfo[1], 'OP3',  Oinfo[2], Oinfo[3], Oinfo[4], 
+            POcoord[0], POcoord[1], POcoord[2], Oinfo[5], Oinfo[6]), pdbf)
+        gatms.append(gauatm('H', POHcoord[0], POHcoord[1], POHcoord[2]))
+        writepdbatm(pdbatm(Hinfo[0], Hinfo[1], 'POH',  Hinfo[2], Hinfo[3], Hinfo[4], 
+            POHcoord[0], POHcoord[1], POHcoord[2], Hinfo[5], Hinfo[6]), pdbf)
+
+    # Add to fingerprint
+    if fpf is not None:
+        fpff = open(fpf, 'a')
+        if not term3:
+            print(str(Hinfo[4]) + '-' + Hinfo[2] + '-HO3\'', file=fpff)
+        if not term5:
+            print(str(Oinfo[4]) + '-' + Oinfo[2] + '-OP3', file=fpff)
+            print(str(Hinfo[4]) + '-' + Hinfo[2] + '-POH', file=fpff)
+        fpff.close()
 
 #---------------------Write base into the PDB file---------------------
 def write_base(mol, i, gatms, pdbf, fpf=None):
@@ -1327,6 +1402,9 @@ def write_base(mol, i, gatms, pdbf, fpf=None):
             Hinfo = [tiker, atid, resname, chainid, resid, occp, tempfac]
         elif atname=='N1':
             N1coord = mol.atoms[j].crd
+
+
+
         
         if '\'' not in atname and atname not in ['OP1', 'OP2', 'P']:
             crdx = round(crdx, 3)
@@ -1494,7 +1572,7 @@ def build_small_model(mol, reslist, ionids, cutoff, smresids, smresace,
         #8) For normal amino acid residues, keep the small
         elif i in reslist.std:
             write_sc(mol, i, gatms, smpdbf)
-        #9) For bases, remove phosphates
+        #9) For bases, remove phosphates + sugars
         elif i in reslist.term5 or i in reslist.term3 or i in reslist.base:
             write_base(mol, i, gatms, smpdbf)
         #10) For speical residue
@@ -1772,7 +1850,11 @@ def build_large_model(mol, reslist, lmsresids, lmsresace, lmsresnme,
         #3) for atoms in GLY ---------------------------------------------------
         elif i in lmsresgly:
             write_gly(mol, i, gatms, lgpdbf, lfpf)
-        #4) for atoms in other residues ----------------------------------------
+        #4) For nucleotides, add terminating O and H
+        elif i in reslist.term5 or i in reslist.term3 or i in reslist.base:
+            write_nucleotide(mol, i, gatms, lgpdbf, lfpf, 
+                            i in reslist.term5, i in reslist.term3)
+        #5) for atoms in other residues ----------------------------------------
         else:
             write_normal(mol, reslist, i, gatms, lgpdbf, lfpf)
 
@@ -1915,7 +1997,7 @@ def gene_model_files(pdbfile, ionids, addres, addbpairs, outf, ffchoice, naamol2
     smreskco = [] #Residues to keep C and O, which is connect to the residue
                   #which has backbone nitrogen bond to the ion and also bond to
                   #to the ion but with sidechain
-    smresbase = []#Base with sugar
+    smresbase = []#Base
     bdedresids = []
     bdedresdict = {}
 
@@ -2045,8 +2127,6 @@ def gene_model_files(pdbfile, ionids, addres, addbpairs, outf, ffchoice, naamol2
         print('ANT-', i, file=w_smresf)
     for i in smresact:
         print('ACT-', i, file=w_smresf)
-    for i in smresbase:
-        print('BASED')
     w_smresf.close()
 
     print("***The small model contains the following residues: ")
