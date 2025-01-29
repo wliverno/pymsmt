@@ -1279,8 +1279,6 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
     PCoord = []
     O3Coord = []
     C3Coord = []
-    Oinfo = []
-    Hinfo = []
     for j in mol.residues[i].resconter:
         tiker = mol.atoms[j].gtype
         atid = mol.atoms[j].atid
@@ -1288,7 +1286,7 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
         element = mol.atoms[j].element
         chainid = 'A'
         resid = mol.atoms[j].resid
-        resname = mol.residues[resid].resname[:2]+'N'
+        resname = mol.residues[resid].resname
 
 
         if atname in ['OP1','OP2', 'O5\'']:
@@ -1297,15 +1295,8 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
             PCoord = mol.atoms[j].crd
         elif atname == 'O3\'':
             O3Coord = mol.atoms[j].crd
-            Oinfo = [tiker, atid, resname, chainid, resid, occp, tempfac]
         elif atname == 'C3\'':
             C3Coord = mol.atoms[j].crd
-            Hinfo = [tiker, atid, resname, chainid, resid, occp, tempfac]
-
-        element = mol.atoms[j].element
-        chainid = 'A'
-        resid = mol.atoms[j].resid
-        resname = mol.residues[resid].resname[:2]+'N'
 
         crdx = mol.atoms[j].crd[0]
         crdy = mol.atoms[j].crd[1]
@@ -1330,6 +1321,7 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
             fpff = open(fpf, 'a')
             print(str(resid) + '-' + resname + '-' + atname, file=fpff)
     
+    # ADD TERMINATION TO GAUSSIAN INPUT 
     # If it doesn't already have 3' termination
     if not term3:
         # Use C3-O3 bond to generate H3 coordinates
@@ -1338,8 +1330,6 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
 
         # Add Coordinates
         gatms.append(gauatm('H', H3coord[0], H3coord[1], H3coord[2]))
-        writepdbatm(pdbatm(Hinfo[0], Hinfo[1], 'HO3\'',  Hinfo[2], Hinfo[3], Hinfo[4], 
-            H3coord[0], H3coord[1], H3coord[2], Hinfo[5], Hinfo[6]), pdbf)
 
     # If it doesn't already have 5' termination (Phosphate will not exist!)
     if not term5:
@@ -1353,21 +1343,7 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
 
         # Add Coordinates
         gatms.append(gauatm('O', POcoord[0], POcoord[1], POcoord[2]))
-        writepdbatm(pdbatm(Oinfo[0], Oinfo[1], 'OP3',  Oinfo[2], Oinfo[3], Oinfo[4], 
-            POcoord[0], POcoord[1], POcoord[2], Oinfo[5], Oinfo[6]), pdbf)
         gatms.append(gauatm('H', POHcoord[0], POHcoord[1], POHcoord[2]))
-        writepdbatm(pdbatm(Hinfo[0], Hinfo[1], 'POH',  Hinfo[2], Hinfo[3], Hinfo[4], 
-            POHcoord[0], POHcoord[1], POHcoord[2], Hinfo[5], Hinfo[6]), pdbf)
-
-    # Add to fingerprint
-    if fpf is not None:
-        fpff = open(fpf, 'a')
-        if not term3:
-            print(str(Hinfo[4]) + '-' + Hinfo[2] + '-HO3\'', file=fpff)
-        if not term5:
-            print(str(Oinfo[4]) + '-' + Oinfo[2] + '-OP3', file=fpff)
-            print(str(Hinfo[4]) + '-' + Hinfo[2] + '-POH', file=fpff)
-        fpff.close()
 
 #---------------------Write base into the PDB file---------------------
 def write_base(mol, i, gatms, pdbf, fpf=None):
