@@ -24,7 +24,7 @@ if [[ "$1" == "--restore" ]]; then
         done
     done
     if [[ -f "$PYDIR/pymsmt/lib.py.backup" ]]; then
-        mv "$PYDIR/pymsmt/lib.py.backup" "$PYDIR/site-packages/pymsmt/lib.py"
+        mv "$PYDIR/pymsmt/lib.py.backup" "$PYDIR/pymsmt/lib.py"
     else
         echo "ERROR: lib.py backup not found! Could not restore..."
     fi

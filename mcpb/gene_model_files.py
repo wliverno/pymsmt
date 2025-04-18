@@ -1330,6 +1330,14 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
 
         # Add Coordinates
         gatms.append(gauatm('H', H3coord[0], H3coord[1], H3coord[2]))
+        atid+=1
+        atmi = pdbatm(tiker, atid, 'HO3\'', resname+'3', 0, 0,
+                              H3coord[0], H3coord[1], H3coord[2], occp, tempfac)
+        writepdbatm(atmi, pdbf)
+        if fpf is not None:
+            fpff = open(fpf, 'a')
+            print(str(resid)+'-'+resname+'3-OH', file=fpff)
+            fpff.close()
 
     # If it doesn't already have 5' termination (Phosphate will not exist!)
     if not term5:
@@ -1344,6 +1352,19 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
         # Add Coordinates
         gatms.append(gauatm('O', POcoord[0], POcoord[1], POcoord[2]))
         gatms.append(gauatm('H', POHcoord[0], POHcoord[1], POHcoord[2]))
+        atid+=1
+        atmi = pdbatm(tiker, atid, 'O5\'', resname+'5', 0, 0,
+                              POcoord[0], POcoord[1], POcoord[2], occp, tempfac)
+        writepdbatm(atmi, pdbf)
+        atid+=1
+        atmi = pdbatm(tiker, atid, 'HO5\'', resname+'5', 0, 0,
+                              POHcoord[0], POHcoord[1], POHcoord[2], occp, tempfac)
+        writepdbatm(atmi, pdbf)
+        if fpf is not None:
+            fpff = open(fpf, 'a')
+            print(str(resid)+'-'+resname+'5-OH', file=fpff)
+            print(str(resid)+'-'+resname+'5-HO', file=fpff)
+            fpff.close()
 
 #---------------------Write base into the PDB file---------------------
 def write_base(mol, i, gatms, pdbf, fpf=None):
