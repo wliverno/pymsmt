@@ -194,12 +194,12 @@ def get_reslist(mol, resids):
                 cterm.append(i)
             else:
                 std.append(i)
-        elif 'HO3\'' in atnames:
-            term3.append(i)
-        elif 'HO5\'' in atnames:
-            term5.append(i)
         elif set(['P','OP1', 'OP2']) < set(atnames):
             base.append(i)
+            if 'HO3\'' in atnames:
+                term3.append(i)
+            elif 'HO5\'' in atnames:
+                term5.append(i)
         else:
             nonstd.append(i)
 

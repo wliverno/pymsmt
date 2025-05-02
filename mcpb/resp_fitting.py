@@ -246,6 +246,33 @@ def add_restriction(frespin, libdict, mol, resids, reslist, mcresids, bnoresids,
                         if atnamejs in ['CA', 'H', 'HA', 'N', 'C', 'O', 'CB']:
                             print("%5d%10.5f" %(1, chg), file=fresp)
                             print("%5d%5d" %(1, natj), file=fresp)
+            elif (i not in bnoresids) and (i in mcresids) and \
+               (i in reslist.base):
+                for j in range(0, len(mol.residues[i].resconter)):
+                    #get new atom id
+                    atj = mol.residues[i].resconter[j]
+                    natj = iddict[atj][0]
+                    atname = mol.atoms[atj].atname
+                    # All backbone and sugar atoms except C1', H1' (DEFAULT)
+                    selectb = chgmod==1 and (atname[1:3] in['2\'','3\'','4\'',
+                                                            '5\''] or \
+                                            atname in ['P','OP1','OP2', 'HO3\'',
+                                                        'HO5\''])
+                    # All backbone atoms and terminating hydrogens
+                    selectc = chgmod==2 and atname in ['P','OP1','OP2','HO3\'',
+                                                        'O3\'','O5\'','HO5\'']
+                    # Just backbone atoms
+                    selectd = chgmod==3 and atname in ['P','OP1','OP2',
+                                                        'O3\'','O5\'']
+                    if selectb or selectc or selectd:
+                        if atname=='HO3\'':
+                            chg = libdict[resname[:2] + '3-HO3\''][1]
+                        elif atname=='HO5\'' or atname=='O5\'':
+                            chg = libdict[resname[:2] + '5-' + atname][1]
+                        else:
+                            chg = libdict[resname + '-' + atname][1]
+                        print("%5d%10.5f" %(1, chg), file=fresp)
+                        print("%5d%5d" %(1, natj), file=fresp)
     else:
         raise pymsmtError('Please choose chgmod among 0, 1, 2 and 3.')
 
@@ -258,6 +285,13 @@ def add_restriction(frespin, libdict, mol, resids, reslist, mcresids, bnoresids,
                 chgj = libdict['N'+resname + '-' + atname][1]
             elif i in reslist.cterm:
                 chgj = libdict['C'+resname + '-' + atname][1]
+            elif i in reslist.base:
+                if atname=='HO3\'':
+                    chgj = libdict[resname[:2] + '3-' + atname][1]
+                elif atname=='HO5\'' or atname=='O5\'':
+                    chgj = libdict[resname[:2] + '5-' + atname][1]
+                else:
+                    chgj = libdict[resname + '-' + atname][1]
             else:
                 chgj = libdict[resname + '-' + atname][1]
             print("%5d%10.5f" %(int(1), chgj), file=fresp)

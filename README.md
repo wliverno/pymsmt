@@ -27,3 +27,10 @@ If you have installed AmberTools without a conda environment, make sure the foll
 Please refer to the [Amber manual](https://ambermd.org/doc12/Amber23.pdf) (Chapter 18, page 345-350) for `MCPB.py` usage information. Only one added optional variable has been implemented in this patch:
 
 > **include_carbon** This variable turns on metal-carbon bonding. This can be set to 0 or 1 to switch on or off (set to 0 by default)
+
+and step 3 charge fitting restraints have been added for DNA as well, making the default method (3b)  match those used for parmBSC0 and parmBSC1 force field development:
+
+> 3a - Allows all the charges of the atoms in the ligating residues to change without restrictions (_unmodified_)
+> 3b - Restrains the charges of the phosphate and sugar atoms to force field values (default)
+> 3c - Restrains the charges of the phosphate backbone atoms and terminating hydrogens to force field values
+> 3d - Restraings the charges of the phosphate backbone atoms to force field values
