@@ -31,6 +31,9 @@ Please refer to the [Amber manual](https://ambermd.org/doc12/Amber23.pdf) (Chapt
 and step 3 charge fitting restraints have been added for DNA as well, making the default method (3b)  match those used for parmBSC0 and parmBSC1 force field development:
 
 > 3a - Allows all the charges of the atoms in the ligating residues to change without restrictions (_unmodified_)
+
 > 3b - Restrains the charges of the phosphate and sugar atoms to force field values (default)
+
 > 3c - Restrains the charges of the phosphate backbone atoms and terminating hydrogens to force field values
-> 3d - Restraings the charges of the phosphate backbone atoms to force field values
+
+> 3d - Restrains the charges of the phosphate backbone atoms to force field values
