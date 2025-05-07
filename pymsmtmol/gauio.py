@@ -302,11 +302,38 @@ def write_gau_mkf(outf, gmkf, lgchg, SpinNum, gatms, ionnames, chargedict,
         elif largeopt == 1:
             for gatmi in gatms:
                 write_gauatm_opth(gatmi, gmkf, signum)
-
-    ##print the ion radius for resp charge fitting in MK RESP input file
+    
+    ##Print Mixed Basis Set
     mkf = open(gmkf, 'a')
     print(" ", file=mkf)
+    
+    # Separate heavier elements from lighter elements
+    lightElements = {'H','He', 'Li','Be', 'B', 'C', 'O', 'N', 'F', 'Ne','S','P'}
+    lightAt = ''
+    heavyAt = ''
+    atomtypes = set([atm.element.strip() for atm in gatms])
+    for atom in atomtypes.intersection(lightElements):
+        lightAt += atom + ' '
+    for atom in atomtypes.difference(lightElements):
+        heavyAt += atom + ' '
+    
+    # Use 6-31g(d,p) for lighter elements and LANL2DZ for heavier elements
+    if lightAt != '':
+        print(lightAt+'0', file=mkf)
+        print('6-31g(d,p)', file=mkf)
+        print('****', file=mkf)
+    if heavyAt != '':
+        print(heavyAt+'0', file=mkf)
+        print('LANL2DZ', file=mkf)
+        print('****', file=mkf)
+    print(" ", file=mkf)
+    if heavyAt != '':
+        print(heavyAt + '0', file=mkf)
+        print("LANL2", file=mkf)
+        print(" ", file=mkf)
 
+
+    ##Print the ion radius for resp charge fitting in MK RESP input file
     for ionname in ionnames:
         chg = int(round(chargedict[ionname], 0))
         if len(ionname) > 1:
@@ -371,33 +398,6 @@ def write_gau_mkf(outf, gmkf, lgchg, SpinNum, gatms, ionnames, chargedict,
                                   "for element %s with %d charge" %(ionname, chg))
             print(ionname, vdwradius, file=mkf)
         print(" ", file=mkf)
-
- 
-    # Separate heavier elements from lighter elements
-    lightElements = {'H','He', 'Li','Be', 'B', 'C', 'O', 'N', 'F', 'Ne','S','P'}
-    lightAt = ''
-    heavyAt = ''
-    atomtypes = set([atm.element.strip() for atm in gatms])
-    for atom in atomtypes.intersection(lightElements):
-        lightAt += atom + ' '
-    for atom in atomtypes.difference(lightElements):
-        heavyAt += atom + ' '
-    
-    # Use 6-31g(d,p) for lighter elements and LANL2DZ for heavier elements
-    if lightAt != '':
-        print(lightAt+'0', file=mkf)
-        print('6-31g(d,p)', file=mkf)
-        print('****', file=mkf)
-    if heavyAt != '':
-        print(heavyAt+'0', file=mkf)
-        print('LANL2DZ', file=mkf)
-        print('****', file=mkf)
-    print(" ", file=mkf)
-    if heavyAt != '':
-        print(heavyAt + '0', file=mkf)
-        print("LANL2", file=mkf)
-        print(" ", file=mkf)
-    print(" ", file=mkf)
 
     mkf.close()
 

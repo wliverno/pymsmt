@@ -1962,8 +1962,11 @@ def gene_model_files(pdbfile, ionids, addres, addbpairs, outf, ffchoice, naamol2
 
     print("***The following residues are in the Metal Site:")
     totchg = 0.0
+    numPhosphates = 0
     for i in msresids:
         print("Residue " + str(i) + '-' + mol.residues[i].resname)
+        if i in reslist.base:
+            numPhosphates += 1
         if i in reslist.nterm:
             totchg = totchg + chargedict['N' + mol.residues[i].resname]
         elif i in reslist.cterm:
@@ -1973,7 +1976,7 @@ def gene_model_files(pdbfile, ionids, addres, addbpairs, outf, ffchoice, naamol2
     totchg = int(round(totchg, 0))
 
     if smchg == -99:
-        smchg = totchg
+        smchg = totchg + numPhosphates
 
     if lgchg == -99:
         lgchg = totchg
