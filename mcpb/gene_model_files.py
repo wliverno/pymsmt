@@ -1322,8 +1322,8 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
             print(str(resid) + '-' + resname + '-' + atname, file=fpff)
     
     # ADD TERMINATION TO GAUSSIAN INPUT 
-    # If it doesn't already have 3' termination
-    if not term3:
+    # Add 3' termination as needed 
+    if term3:
         # Use C3-O3 bond to generate H3 coordinates
         vec = [O3Coord[i]-C3Coord[i] for i in range(3)]
         _, H3coord = genOH(C3Coord, vec)
@@ -1339,8 +1339,8 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
             print(str(resid)+'-'+resname+'-OH', file=fpff)
             fpff.close()
 
-    # If it doesn't already have 5' termination (Phosphate will not exist!)
-    if not term5:
+    # Add 5' termination as needed
+    if term5:
         # use average of O-P bonds to generate -OH direction
         v = [[b[i]-PCoord[i] for i in range(3)] for b in OPCoords]
         avg = [-sum(v[j][i] for j in range(3)) for i in range(3)]
@@ -1570,7 +1570,7 @@ def build_small_model(mol, reslist, ionids, cutoff, smresids, smresace,
         elif i in reslist.std:
             write_sc(mol, i, gatms, smpdbf)
         #9) For bases, remove phosphates + sugars
-        elif i in reslist.term5 or i in reslist.term3 or i in reslist.base:
+        elif i in reslist.base:
             write_base(mol, i, gatms, smpdbf)
         #10) For speical residue
         else:
@@ -1848,9 +1848,11 @@ def build_large_model(mol, reslist, lmsresids, lmsresace, lmsresnme,
         elif i in lmsresgly:
             write_gly(mol, i, gatms, lgpdbf, lfpf)
         #4) For nucleotides, add terminating O and H
-        elif i in reslist.term5 or i in reslist.term3 or i in reslist.base:
-            write_nucleotide(mol, i, gatms, lgpdbf, lfpf, 
-                            i in reslist.term5, i in reslist.term3)
+        elif i in reslist.base:
+            #Only terminate if not already AND no neighboring basepair 
+            term5 = (i not in reslist.term5) and (i-1 not in lmsresids)
+            term3 = (i not in reslist.term3) and (i+1 not in lmsresids)
+            write_nucleotide(mol, i, gatms, lgpdbf, lfpf, term5, term3)
         #5) for atoms in other residues ----------------------------------------
         else:
             write_normal(mol, reslist, i, gatms, lgpdbf, lfpf)
@@ -2101,7 +2103,7 @@ def gene_model_files(pdbfile, ionids, addres, addbpairs, outf, ffchoice, naamol2
                     smresace.append(resid-1)
 
         #4. If residue is a basepair
-        elif (resid in reslist.base) or (resid in reslist.term3) or (resid in reslist.term5):
+        elif (resid in reslist.base):
             smresbase.append(resid)
 
 
