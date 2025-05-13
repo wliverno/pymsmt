@@ -1277,6 +1277,7 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
           mol.residues[i].resname + " as a sugar and base.")
     OPCoords = []
     PCoord = []
+    Patid = 0
     O3Coord = []
     C3Coord = []
     for j in mol.residues[i].resconter:
@@ -1293,6 +1294,7 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
             OPCoords.append(mol.atoms[j].crd)
         elif atname == 'P':
             PCoord = mol.atoms[j].crd
+            Patid = atid + 0
         elif atname == 'O3\'':
             O3Coord = mol.atoms[j].crd
         elif atname == 'C3\'':
@@ -1352,7 +1354,7 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
         # Add Coordinates
         gatms.append(gauatm('O', POcoord[0], POcoord[1], POcoord[2]))
         gatms.append(gauatm('H', POHcoord[0], POHcoord[1], POHcoord[2]))
-        atid+=1
+        atid= Patid-2
         atmi = pdbatm(tiker, atid, 'O5\'', resname[:2]+'5', chainid, resid,
                               POcoord[0], POcoord[1], POcoord[2], occp, tempfac)
         writepdbatm(atmi, pdbf)
