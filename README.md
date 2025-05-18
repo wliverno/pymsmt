@@ -34,6 +34,6 @@ and step 3 charge fitting restraints have been added for DNA as well, making the
 
 > 3b - Restrains the charges of the phosphate and sugar atoms to force field values (default)
 
-> 3c - Restrains the charges of the phosphate backbone atoms and terminating hydrogens to force field values
+> 3c - Restrains the charges of the phosphate backbone atoms to force field values
 
-> 3d - Restrains the charges of the phosphate backbone atoms to force field values
+> 3d - Restrains the charges of the phosphorus only

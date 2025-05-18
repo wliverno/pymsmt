@@ -1355,7 +1355,7 @@ def write_nucleotide(mol, i, gatms, pdbf, fpf=None, term5=False, term3=False):
         gatms.append(gauatm('O', POcoord[0], POcoord[1], POcoord[2]))
         gatms.append(gauatm('H', POHcoord[0], POHcoord[1], POHcoord[2]))
         atid= Patid-2
-        atmi = pdbatm(tiker, atid, 'O5\'', resname[:2]+'5', chainid, resid,
+        atmi = pdbatm(tiker, atid, 'O5T', resname[:2]+'5', chainid, resid,
                               POcoord[0], POcoord[1], POcoord[2], occp, tempfac)
         writepdbatm(atmi, pdbf)
         atid+=1

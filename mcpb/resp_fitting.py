@@ -256,21 +256,20 @@ def add_restriction(frespin, libdict, mol, resids, reslist, mcresids, bnoresids,
                     # All backbone and sugar atoms except C1', H1' (DEFAULT)
                     selectb = chgmod==1 and (atname[1:3] in['2\'','3\'','4\'',
                                                             '5\''] or \
-                                            atname in ['P','OP1','OP2', 'HO3\'',
-                                                        'HO5\''])
-                    # All backbone atoms and terminating hydrogens
-                    selectc = chgmod==2 and atname in ['P','OP1','OP2','HO3\'',
-                                                        'O3\'','O5\'','HO5\'']
-                    # Just backbone atoms
-                    selectd = chgmod==3 and atname in ['P','OP1','OP2',
-                                                        'O3\'','O5\'']
-                    if selectb or selectc or selectd:
-                        if atname=='HO3\'':
-                            chg = libdict[resname[:2] + '3-HO3\''][1]
-                        elif atname=='HO5\'' or atname=='O5\'':
-                            chg = libdict[resname[:2] + '5-' + atname][1]
-                        else:
-                            chg = libdict[resname + '-' + atname][1]
+                                            atname in ['P','OP1','OP2'])
+                    # All backbone atoms
+                    selectc = chgmod==2 and atname in ['P','OP1','OP2', 
+                                                            'O3\'','O5\'']
+                    # Just phosphorus  
+                    selectd = chgmod==3 and atname in ['P']
+                    
+                    resname = resname[:2]
+                    if atname in ['O5T', 'HO5\'', 'HO3\'']:
+                        chg = 0
+                        print("%5d%10.5f" %(1, chg), file=fresp)
+                        print("%5d%5d" %(1, natj), file=fresp)
+                    elif selectb or selectc or selectd:
+                        chg = libdict[resname + '-' + atname][1]
                         print("%5d%10.5f" %(1, chg), file=fresp)
                         print("%5d%5d" %(1, natj), file=fresp)
     else:
@@ -358,6 +357,7 @@ def gene_resp_input_file(lgpdbf, ionids, stfpf, ffchoice, mol2fs,
         else:
             reschg = chargedict[resname]
         totchg = totchg + reschg
+
 
     totchg = int(round(totchg, 0))
 
