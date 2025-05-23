@@ -265,7 +265,13 @@ def add_restriction(frespin, libdict, mol, resids, reslist, mcresids, bnoresids,
                     
                     resname = resname[:2]
                     if atname in ['O5T', 'HO5\'', 'HO3\'']:
-                        chg = 0
+                        O5charge = libdict[resname + '-O5\''][1]
+                        if atname[:1] == 'O':
+                            chg=O5charge
+                        elif atname[:1] == 'H':
+                            chg=abs(O5charge)/2
+                        else:
+                            chg = 0
                         print("%5d%10.5f" %(1, chg), file=fresp)
                         print("%5d%5d" %(1, natj), file=fresp)
                     elif selectb or selectc or selectd:
