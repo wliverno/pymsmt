@@ -285,8 +285,9 @@ def write_gau_mkf(outf, gmkf, lgchg, SpinNum, gatms, ionnames, chargedict,
     print("CLR", file=mkf)
     print(" ", file=mkf)
     print("%d  %d" %(lgchg, SpinNum), file=mkf)
+    print(" ", file=mkf)
     mkf.close()
-
+    
     #For Gaussian file
     if signum == 3:
         if largeopt in [0, 2]:
@@ -302,68 +303,8 @@ def write_gau_mkf(outf, gmkf, lgchg, SpinNum, gatms, ionnames, chargedict,
         elif largeopt == 1:
             for gatmi in gatms:
                 write_gauatm_opth(gatmi, gmkf, signum)
-    
-    ##Print Mixed Basis Set
+ 
     mkf = open(gmkf, 'a')
-    print(" ", file=mkf)
-    
-    # Separate heavier elements from lighter elements
-    lightElements = {'H','He', 'Li','Be', 'B', 'C', 'O', 'N', 'F', 'Ne','S','P'}
-    lightAt = ''
-    heavyAt = ''
-    atomtypes = set([atm.element.strip() for atm in gatms])
-    for atom in atomtypes.intersection(lightElements):
-        lightAt += atom + ' '
-    for atom in atomtypes.difference(lightElements):
-        heavyAt += atom + ' '
-    
-    # Use 6-31g(d,p) for lighter elements and LANL2DZ for heavier elements
-    if lightAt != '':
-        print(lightAt+'0', file=mkf)
-        print('6-31g(d,p)', file=mkf)
-        print('****', file=mkf)
-    if heavyAt != '':
-        print(heavyAt+'0', file=mkf)
-        print('LANL2DZ', file=mkf)
-        print('****', file=mkf)
-    print(" ", file=mkf)
-    if heavyAt != '':
-        print(heavyAt + '0', file=mkf)
-        print("LANL2", file=mkf)
-        print(" ", file=mkf)
-
-
-    ##Print the ion radius for resp charge fitting in MK RESP input file
-    for ionname in ionnames:
-        chg = int(round(chargedict[ionname], 0))
-        if len(ionname) > 1:
-            ionname = ionname[0] + ionname[1:].lower()
-
-        vdwradius = None
-        mnum = max([9-chg, chg])
-        for i in range(0, mnum):
-
-            fchg1 = chg - i
-            fchg2 = chg + i
-
-            if i == 0 and ionname+str(fchg1) in list(IonLJParaDict.keys()):
-                vdwradius = IonLJParaDict[ionname + str(fchg1)][0]
-                break
-            elif fchg1 > 0 and ionname+str(fchg1) in list(IonLJParaDict.keys()):
-                print("Could not find VDW radius for element %s with charge "
-                      "+%d, use the one of charge +%d" %(ionname, chg, fchg1))
-                vdwradius = IonLJParaDict[ionname + str(fchg1)][0]
-                break
-            elif fchg2 <= 8 and ionname+str(fchg2) in list(IonLJParaDict.keys()):
-                print("Could not find VDW radius for element %s with charge "
-                      "+%d, use the one of charge +%d" %(ionname, chg, fchg2))
-                vdwradius = IonLJParaDict[ionname + str(fchg2)][0]
-                break
-
-        if vdwradius is None:
-            raise pymsmtError("Could not find VDW parameters/radius for "
-                              "element %s with charge +%d" %(ionname, chg))
-        print(ionname, vdwradius, file=mkf)
     print(" ", file=mkf)
 
     if largeopt in [1, 2]:
@@ -398,6 +339,34 @@ def write_gau_mkf(outf, gmkf, lgchg, SpinNum, gatms, ionnames, chargedict,
                                   "for element %s with %d charge" %(ionname, chg))
             print(ionname, vdwradius, file=mkf)
         print(" ", file=mkf)
+   
+    ##Print Mixed Basis Set
+    
+    # Separate heavier elements from lighter elements
+    lightElements = {'H','He', 'Li','Be', 'B', 'C', 'O', 'N', 'F', 'Ne','S','P'}
+    lightAt = ''
+    heavyAt = ''
+    atomtypes = set([atm.element.strip() for atm in gatms])
+    for atom in atomtypes.intersection(lightElements):
+        lightAt += atom + ' '
+    for atom in atomtypes.difference(lightElements):
+        heavyAt += atom + ' '
+    
+    # Use 6-31g(d,p) for lighter elements and LANL2DZ for heavier elements
+    if lightAt != '':
+        print(lightAt+'0', file=mkf)
+        print('6-31g(d,p)', file=mkf)
+        print('****', file=mkf)
+    if heavyAt != '':
+        print(heavyAt+'0', file=mkf)
+        print('LANL2DZ', file=mkf)
+        print('****', file=mkf)
+    print(" ", file=mkf)
+    if heavyAt != '':
+        print(heavyAt + '0', file=mkf)
+        print("LANL2", file=mkf)
+        print(" ", file=mkf)
+
 
     mkf.close()
 

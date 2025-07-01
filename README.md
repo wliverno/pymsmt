@@ -1,17 +1,15 @@
 # pymsmt + mmDNA
 Python Metal Site Modeling Toolbox with mmDNA Patch
 
-It is developed by Pengfei Li in Prof. Kenne Merz's Research Group at Michigan State University.
-This software is free of charge and a version 1.0 Beta1 has been released in AmberTools15 package.
-It should be used with AmberTools15 due to it uses other code and files inside the packge.
-
-Compatibility with metal modified DNA (mmDNA) implemented by William Livernois in Prof. Anantram's Research group at University of Washington.
+It is developed by Pengfei Li in Prof. Kenne Merz's Research Group at Michigan State University. Compatibility with metal modified DNA (mmDNA) implemented by William Livernois in Prof. Anantram's Research group at University of Washington.
 # Installation
-While this repository is a fork of PyMSMT and can be installed with the `install.sh` script, it has been built to be added as a patch to the AmberTools installation. The easiest way to install is with the AmberTools conda environment, which must be activated before installation. Following the [guide on the Amber website](https://ambermd.org/GetAmber.php), this would be done with the command: 
+While this repository is a fork of PyMSMT and can be installed with the `install.sh` script, it has been built to be added as a patch to the AmberTools installation. The easiest way to install is with the AmberTools conda environment, which must be activated before installation. The guide for this is [on the Amber website](https://ambermd.org/GetAmber.php), and can be done simply installing the package from conda-forge:
+    
+    conda create --name AmberTools python=3.12
+    conda activate AmberTools
+    conda install ambertools -c conda-forge
 
-    conda activate AmberTools23
-
-Then, the patch can be applied simply by running
+Then, from the activate conda environment the patch can be applied simply by running
 
 	./patch.sh
 
@@ -19,7 +17,7 @@ which creates back-ups of all replaced files. To restore these files simply run
 
 	./patch.sh --restore
 
-If you have installed AmberTools without a conda environment, make sure the following requirements are met before installing the patch: 
+If you have installed AmberTools without a conda environment, you can still install the files with the patch. Just make sure the following requirements are met before running: 
 - `$AMBERTOOLS` environmental variable set
 - Python 3 with a version of the `pymsmt` package installed
 
