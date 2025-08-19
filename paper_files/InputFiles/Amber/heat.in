@@ -1,0 +1,41 @@
+Heating to 300K
+&cntrl
+    imin=0,                   ! Molecular dynamics run
+    nstlim=1000000, dt=0.001, ! 1 ns run
+    irest=0,                  ! Start a new run
+    ntx=1,                    ! Read initial coordinates
+    ig=-1,                    ! Random seed for initial velocities
+    tempi=0.0, temp0=300.0,   ! Initial temperature is 0K, target is 300K
+    ntc=2, ntf=2,             ! SHAKE algorithm for bonds with hydrogen
+    tol=0.00001,              ! Convergence tolerance for SHAKE
+    ntwx=1000,                ! Coordinates will be written every 1000 steps
+    ntwe=0,                   ! No writing of energy data
+    ntwr=500,                 ! Restart file written every 500 steps
+    ntpr=500,                 ! Printing output every 500 steps
+    cut=10.0,                 ! Non-bonded cutoff
+    iwrap=0,                  ! Don't wrap atoms back into the primary box
+    ntt=3, gamma_ln=1.0,      ! Langevin thermostat with collision frequency of 1.0 ps^-1
+    ntb=1, ntp=0,             ! Constant volume (NVT ensemble)
+    nscm=0,                   ! No removal of center-of-mass motion
+    ntr=1,                    ! Apply restraints
+    restraintmask=':1-16',   ! Restraints applied to residues 1 to 16
+    restraint_wt=50.0,       ! Weight of the restraints
+    nmropt=1,                 ! Use the specified weight changes below
+    ioutfm=1, ntxo=2,        ! Binary NetCDF output
+&end
+&wt
+    type='TEMP0',             ! Changing temperature
+    istep1=0,                 ! Starting from step 0
+    istep2=5000,              ! Up to step 5000
+    value1=0.0, value2=300.0, ! Gradually heat from 0K to 300K over 5000 steps
+&end
+&wt
+    type='TEMP0',             ! Constant temperature
+    istep1=5001,              ! Starting from step 5001
+    istep2=1000000,           ! Up to step 1000000
+    value1=300.0, value2=300.0, ! Keep the temperature constant at 300K
+&end
+&wt
+    type='END',               ! End of weight specifications
+&end
+

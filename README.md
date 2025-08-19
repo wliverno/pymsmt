@@ -1,8 +1,8 @@
 # pymsmt + mmDNA
 Python Metal Site Modeling Toolbox with mmDNA Patch
 
-It is developed by Pengfei Li in Prof. Kenne Merz's Research Group at Michigan State University. Compatibility with metal modified DNA (mmDNA) implemented by William Livernois in Prof. Anantram's Research group at University of Washington.
-# Installation
+Originally developed by Pengfei Li in Prof. Kenne Merz's Research Group at Michigan State University. Compatibility with metal modified DNA (mmDNA) implemented by William Livernois in Prof. Anantram's Research group at University of Washington.
+## Installation
 While this repository is a fork of PyMSMT and can be installed with the `install.sh` script, it has been built to be added as a patch to the AmberTools installation. The easiest way to install is with the AmberTools conda environment, which must be activated before installation. The guide for this is [on the Amber website](https://ambermd.org/GetAmber.php), and can be done simply installing the package from conda-forge:
     
     conda create --name AmberTools python=3.12
@@ -29,9 +29,12 @@ Please refer to the [Amber manual](https://ambermd.org/doc12/Amber23.pdf) (Chapt
 and step 3 charge fitting restraints have been added for DNA as well, making the default method (3b)  match those used for parmBSC0 and parmBSC1 force field development:
 
 > 3a - Allows all the charges of the atoms in the ligating residues to change without restrictions (_unmodified_)
-
+>
 > 3b - Restrains the charges of the phosphate and sugar atoms to force field values (default)
-
+>
 > 3c - Restrains the charges of the phosphate backbone atoms to force field values
-
+>
 > 3d - Restrains the charges of the phosphorus only
+
+## Additional Files
+The files for the modified parmBSC1 force field used for testing this work are included the *mmDNA/* directory. All data files used for the manuscript are included in the *paper_files/* directory.

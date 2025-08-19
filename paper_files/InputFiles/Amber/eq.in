@@ -1,0 +1,21 @@
+&cntrl
+    imin=0,                   ! Molecular dynamics run
+    nstlim=1000000, dt=0.001, ! 1 ns run
+    ntx=5, irest=1,           ! Start from the heated structure and velocities
+    temp0=300.0,              ! Target temperature is 300 K
+    ntt=3, gamma_ln=1.0,      ! Langevin thermostat with collision frequency of 1.0 ps^-1
+    ntc=2, ntf=2,             ! SHAKE algorithm for bonds with hydrogen
+    tol=0.00001,              ! Convergence tolerance for SHAKE
+    ntwx=1000,                ! Coordinates will be written every 1000 steps
+    ntwe=0,                   ! No writing of energy data
+    ntwr=500,                 ! Restart file written every 500 steps
+    ntpr=500,                 ! Printing output every 500 steps
+    ntb=2, ntp=1,             ! Constant pressure (NPT ensemble)
+    cut=10.0,                 ! Non-bonded cutoff
+    taup=1.0,                 ! Pressure relaxation time
+    ntr=1,                    ! Apply restraints
+    restraintmask=':1-15',    ! Restraints applied to residues 1 to 15 (note correction in residue numbers)
+    restraint_wt=0.5,         ! Weight for the restraints
+    ioutfm=1, ntxo=2,         ! Binary NetCDF output
+&end
+

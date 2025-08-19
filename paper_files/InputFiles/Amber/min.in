@@ -1,0 +1,8 @@
+Minimization of the whole system
+&cntrl
+    imin=1,                   ! Energy minimization
+    maxcyc=5000, ncyc=250,    ! Total of 5000 cycles; first 250 steepest descent, then conjugate gradient
+    ntb=1, ntp=0,             ! Constant volume
+    cut=10.0,                 ! Non-bonded cutoff
+    ioutfm=1, ntxo=2,        ! Binary NetCDF output
+&end

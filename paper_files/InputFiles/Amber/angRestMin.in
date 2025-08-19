@@ -1,0 +1,12 @@
+initial minimization
+ &cntrl
+  imin = 1,
+  maxcyc=5000, ncyc = 250,
+  cut = 10.0,
+  ntb = 1, ntp = 0,
+  nmropt = 1,
+ &end
+ &wt
+  type='END',
+ &end
+DISANG=CAg2T.na    ! Set to CAg2T.na or CHgT.na
