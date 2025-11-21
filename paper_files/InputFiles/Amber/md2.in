@@ -1,0 +1,21 @@
+Production MD Run
+&cntrl
+    imin=0,
+    ntx=5, irest=1,           ! Start from the equilibrated structure and velocities
+    ntpr=1000, ntwr=10000,     ! Output controls
+    ntwx=10000, ntwe=10000,
+    nscm=1000,                ! Remove center-of-mass motion every 1000 steps
+    ntf=2, ntc=2,             ! SHAKE algorithm for bonds with hydrogen
+    ntb=2, ntp=1,             ! NPT ensemble
+    tautp=0.2, taup=0.2,      ! Pressure control parameters
+    ig=12345,
+    nstlim=900000000, dt=0.001, ! 900 ns simulation
+    cut=10.0,                 ! Non-bonded cutoff
+    ntt=3,                    ! Langevin thermostat for better ensemble sampling
+    gamma_ln=1.0,             ! Collision frequency for Langevin dynamics
+    temp0=300.0,              ! Target temperature
+    ioutfm=1,                 ! Binary NetCDF output
+&end
+&ewald
+    ew_type=0, skinnb=1.0,    ! Particle Mesh Ewald for long-range electrostatics
+&end
